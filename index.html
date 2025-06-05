@@ -26,36 +26,61 @@
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-        gap: 20px;
+        gap: 40px;  /* Increased gap */
         margin: 20px 0;
         width: 100%;
+        max-width: 1400px;  /* Optional: Limit the width for larger screens */
     }
 
     .project-card {
         width: 100%;
-        max-width: 600px;  /* Limit the width on larger screens */
+        max-width: 1000px;  /* Increased max-width for larger projects */
         padding: 20px;
         background-color: #fff;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         text-align: center;
         box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
     }
 
-    .project-card h3 {
-        margin: 0;
-        font-size: 1.5rem;
-    }
-
-    iframe {
-        width: 100%;
-        height: 400px;
+    .project-card iframe {
+        width: 80%;  /* Increased width of iframe */
+        height: 500px;  /* Increased height */
         border: none;
         box-sizing: border-box;
     }
 
+    .project-description {
+        width: 80%;  /* Adjusted description width */
+        text-align: center;
+        font-size: 1rem;
+        color: #333;
+    }
+
+    /* Make the layout stack vertically on small screens */
+    @media (max-width: 800px) {
+        .project-card {
+            text-align: center;
+        }
+
+        .project-card iframe {
+            width: 100%;
+            height: 400px;  /* Adjusted height for smaller screens */
+        }
+
+        .project-description {
+            width: 100%;
+            margin-top: 10px;
+        }
+    }
+
+    /* Optional: Adjust iframe height for smaller screens */
     @media (max-width: 600px) {
         iframe {
-            height: 300px;  /* Adjust height on smaller screens */
+            height: 350px;
         }
     }
 </style>
@@ -66,11 +91,17 @@
 
 <div id="projects">
     <div class="project-card">
-        <h3>Three.js Project 1</h3>
+        <h3>Three.js Project 1</h3>  <!-- Title above the demo -->
         <iframe src="projects/robot_arm/PW1_Ex5.html"></iframe>
+        <div class="project-description">
+            <p>This project involves simulating robotic arm movements and controlling them in real-time. Explore the interactive controls!</p>
+        </div>
     </div>
     <div class="project-card">
-        <h3>Three.js Project 2</h3>
+        <h3>Three.js Project 2</h3>  <!-- Title above the demo -->
         <iframe src="projects/room_lighting/PW2_Ex6.html"></iframe>
+        <div class="project-description">
+            <p>This project simulates a room lighting setup, allowing you to adjust different types of lighting. Try modifying the parameters in the GUI.</p>
+        </div>
     </div>
 </div>

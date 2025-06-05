@@ -1,0 +1,394 @@
+<!-- Licensed under a BSD license. See license.html for license -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Three.js - Basic Cube</title>
+    <style>
+      html,
+      body {
+        width: 50%;
+        height: 50%;
+        margin: 0;
+      }
+
+      #c {
+        width: 50%;
+        height: 50%;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+  <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.172.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.172.0/examples/jsm/"
+      }
+    }
+  </script>
+
+<script type="module">
+  import * as THREE from 'three';
+  import {VRButton} from 'three/addons/webxr/VRButton.js';//vr
+  import {XRButton} from 'three/addons/webxr/XRButton.js';//vr mr
+  import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';//mr
+  // import { TextGeometry } from '/three/examples/jsm/geometries/TextGeometry.js';
+  // import { FontLoader } from '/three/examples/jsm/loaders/FontLoader.js';
+  import { TextGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/geometries/TextGeometry.js';
+  import { FontLoader } from 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/loaders/FontLoader.js';
+  import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.js';
+  import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+  
+        // const canvas = document.querySelector('#c');
+        var scene = new THREE.Scene();
+        var renderer = new THREE.WebGLRenderer();
+        // const renderer = new THREE.WebGLRenderer({antialias: true, canvas});
+        renderer.xr.enabled = true;//vr mr
+        document.body.appendChild(renderer.domElement);//vr mr
+        // document.body.appendChild(VRButton.createButton(renderer));//vr
+        document.body.appendChild( XRButton.createButton( renderer, {
+					'optionalFeatures': [ 'depth-sensing' ],
+					'depthSensing': { 'usagePreference': [ 'gpu-optimized' ], 'dataFormatPreference': [] }
+				} ) );//mr
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        
+        // // show image
+        // var geometry = new THREE.BoxGeometry(0, 2, 1);
+        // const textureLoader = new THREE.TextureLoader();
+        // const texture = textureLoader.load("https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Gorille_des_plaines_de_l%27ouest_%C3%A0_l%27Espace_Zoologique.jpg/440px-Gorille_des_plaines_de_l%27ouest_%C3%A0_l%27Espace_Zoologique.jpg");
+        // const material = new THREE.MeshBasicMaterial({ map: texture });
+        // var image = new THREE.Mesh(geometry, material);
+        // image.position.set(0, 1, 1);
+        // scene.add(image);
+
+        
+        
+        function mark_closs(x, y, z){
+          const material = new THREE.LineBasicMaterial( { color: 0x808080 } );
+          const points = [];
+          points.push( new THREE.Vector3( - 0.5, 0, 0 ) );
+          // points.push( new THREE.Vector3( 0, 10, 0 ) );
+          points.push( new THREE.Vector3( 0.5, 0, 0 ) );
+
+          const geometry = new THREE.BufferGeometry().setFromPoints( points );
+          const line_x = new THREE.Line( geometry, material );
+          const line_y = new THREE.Line( geometry, material );
+          line_x.position.set(x, y, z);
+          line_y.position.set(x, y, z);
+          line_y.rotation.y = Math.PI / 2;
+          scene.add( line_x );
+          scene.add( line_y );
+        }
+        function set_cross(){
+          const x = 0
+          const y = 0
+          const z = 0
+          for ( let x = -20; x < 20; x += 5 ) {
+            for ( let z = -20; z < 20; z += 5 ) {
+              mark_closs(x, y, z);
+            }
+          }
+        }
+        
+        // PerspectiveCamera
+        var aspect = window.innerWidth / window.innerHeight;
+        var camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
+        // camera.position.set(0, 80, 80); // (X, Y, Z)//vr
+        camera.position.set(0, 1.6, 20); // mr
+        camera.lookAt(0, 10, 10); 
+        const controls = new OrbitControls(camera, renderer.domElement);
+
+
+      
+        // camera control
+        // // Initialize FirstPersonControls
+        // const FPcontrol = new FirstPersonControls(camera, renderer.domElement);
+        // FPcontrol.movementSpeed = 10; // Speed of movement
+        // FPcontrol.lookSpeed = 0.1; // Speed of looking around
+        // FPcontrol.lookVertical = true; 
+        // FPcontrol.handleResize();
+
+        // // Initialize OrbitControls
+        // const OBcontrol = new OrbitControls( camera2, renderer.domElement );
+
+        // const clock = new THREE.Clock();
+        
+
+        // light
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(0, 50, 50);  
+        scene.add(light);
+
+      // materials
+      const matA = new THREE.MeshStandardMaterial({ color: 0x505050 }); // dark gray color
+      // const matA = new THREE.MeshStandardMaterial({ color: 0x808080 }); // light gray color
+      const matC = new THREE.MeshStandardMaterial({
+          color: 0xE5E4E2, // Platinum (Very light gray)
+          metalness: 0.0,  // Non-metallic
+          roughness: 0.5   // Slightly smooth but not too reflective
+      });
+      const matD = new THREE.MeshStandardMaterial({
+          color: 0x87CEEB,  // Sky Blue
+          metalness: 0.0,   // Non-metallic
+          roughness: 0.5    // Slightly smooth but not too reflective
+      });
+
+        // texture
+        const loader = new THREE.TextureLoader();
+        const texture1 = loader.load( 'resources/textures/arm_texture1.png' );
+	    texture1.colorSpace = THREE.SRGBColorSpace;
+        texture1.rotation = Math.PI / 2;
+        texture1.center.set(0.5, 0.5); 
+        const texture2 = loader.load( 'resources/textures/arm_texture1.png' );
+	    texture2.colorSpace = THREE.SRGBColorSpace;
+        texture2.rotation = - Math.PI / 2;
+        texture2.center.set(0.5, 0.5); 
+        const matB = [
+            new THREE.MeshStandardMaterial({ color: 0x505050 }), 
+            new THREE.MeshStandardMaterial({ color: 0x505050 }), 
+            new THREE.MeshStandardMaterial({ color: 0x505050 }), 
+            new THREE.MeshStandardMaterial({ color: 0x505050 }), 
+            new THREE.MeshStandardMaterial({ map: texture1 }), 
+            new THREE.MeshStandardMaterial({ map: texture2 }),  
+        ];
+        // const matB = new THREE.MeshPhongMaterial( { map: texture } );
+        
+
+        // create partA(=A1+A2)
+        const geomA1 = new THREE.BoxGeometry(10, 10, 10);
+        const partA1 = new THREE.Mesh(geomA1, matB);
+        const geomA2 = new THREE.CylinderGeometry(2.5, 6, 7, 10);
+        const partA2 = new THREE.Mesh(geomA2, matA);
+        const partA = new THREE.Object3D();
+        partA1.position.set(6, 0, 0); 
+        partA2.rotation.z = Math.PI / 2;
+        partA2.position.set(-2.5, 0, 0);
+        partA.add(partA1);
+        partA.add(partA2);
+
+        // create partB
+        const geomB = new THREE.CylinderGeometry(5, 5, 10, 10);
+        const partB = new THREE.Mesh(geomB, matA);
+
+        // create partD(=D1+D2+D3*2)
+        const partD = new THREE.Object3D();
+        const geomD1 = new THREE.CylinderGeometry(2.5, 3.5, 3, 10);
+        const partD1 = new THREE.Mesh(geomD1, matA);
+        const geomD2 = new THREE.CylinderGeometry(3.5, 3.5, 5, 10);
+        const partD2 = new THREE.Mesh(geomD2, matA);
+        const geomD3 = new THREE.BoxGeometry(10, 1.5, 1.5);
+        const partD3 = new THREE.Mesh(geomD3, matD);
+        partD1.rotation.z = Math.PI / 2;
+        partD2.rotation.z = Math.PI / 2;
+        partD1.position.set(0, 0, 0);
+        partD2.position.set(3, 0, 0);
+        // partD3.position.set(7, 0, 3);
+        // partD3_2.position.set(7, 0, -3);
+        partD.add(partD1);
+        partD.add(partD2);
+
+        // Left arm
+        const arm_L = new THREE.Object3D();
+        const L1 = partA.clone();
+        const L2 = partB.clone();
+        const L3 = partA.clone();
+        const L4 = partB.clone();
+        const L5 = partA.clone();
+        const L6 = partB.clone();
+        const L7 = partD.clone();
+        const L8_p1 = new THREE.Object3D();// pivot
+        const L8_p2 = new THREE.Object3D();// pivot
+        const L8_1 = partD3.clone();
+        const L8_2 = partD3.clone();
+
+        scene.add(arm_L);
+        arm_L.add(L1);
+        L1.add(L2);
+        L2.add(L3);
+        L3.add(L4);
+        L4.add(L5);
+        L5.add(L6);
+        L6.add(L7);
+        L7.add(L8_p1);
+        L7.add(L8_p2);
+        L8_p1.add(L8_1);
+        L8_p2.add(L8_2);
+        
+        L1.position.set(0, 0, 0); 
+        L2.position.set(16, 0, 0);
+        L3.position.set(10, 0, 0);
+        L4.position.set(16, 0, 0);
+        L5.position.set(10, 0, 0);
+        L6.position.set(16, 0, 0);
+        L7.position.set(6, 0, 0);
+        L8_p1.position.set(4, 0, 3);//How much the object is shifted from the postition
+        L8_p2.position.set(4, 0, -3);
+        L8_1.position.set(4, 0, 0);// How much the pivot is shifted from the center of the object
+        L8_2.position.set(4, 0, 0);
+        
+        L1.rotation.x = Math.PI / 4;
+        L2.rotation.y = - Math.PI / 2;
+        L3.rotation.x = -Math.PI * 4 / 9;
+        L4.rotation.y = - Math.PI / 2;
+        L5.rotation.x = - Math.PI * 2 / 3;
+        L7.rotation.x = - Math.PI / 2;
+        arm_L.position.set(15, 35, 0);
+        arm_L.rotation.z = (Math.PI / 7) * 2;
+        arm_L.rotation.x = Math.PI / 6;
+        
+
+        // Right arm
+        const arm_R = new THREE.Object3D();
+        const R1 = partA.clone();
+        const R2 = partB.clone();
+        const R3 = partA.clone();
+        const R4 = partB.clone();
+        const R5 = partA.clone();
+        const R6 = partB.clone();
+        const R7 = partD.clone();
+        const R8_p1 = new THREE.Object3D();// pivot
+        const R8_p2 = new THREE.Object3D();// pivot
+        const R8_1 = partD3.clone();
+        const R8_2 = partD3.clone();
+
+        scene.add(arm_R);
+        arm_R.add(R1);
+        R1.add(R2);
+        R2.add(R3);
+        R3.add(R4);
+        R4.add(R5);
+        R5.add(R6);
+        R6.add(R7);
+        R7.add(R8_p1);
+        R7.add(R8_p2);
+        R8_p1.add(R8_1);
+        R8_p2.add(R8_2);
+
+        R1.position.set(0, 0, 0); 
+        R2.position.set(16, 0, 0);
+        R3.position.set(10, 0, 0);
+        R4.position.set(16, 0, 0);
+        R5.position.set(10, 0, 0);
+        R6.position.set(16, 0, 0);
+        R7.position.set(6, 0, 0);
+        R8_p1.position.set(4, 0, 3);//How much the object is shifted from the postition
+        R8_p2.position.set(4, 0, -3);
+        R8_1.position.set(4, 0, 0);
+        R8_2.position.set(4, 0, 0);
+        R1.rotation.x = -Math.PI / 4;
+        R2.rotation.y = Math.PI / 2;
+        R3.rotation.x = -Math.PI * 4 / 9;
+        R4.rotation.y = - Math.PI / 3;
+        R5.rotation.x = - Math.PI / 3;
+        R6.rotation.y = - Math.PI / 6;
+        R7.rotation.x = - Math.PI / 2;
+        arm_R.rotation.y = Math.PI;
+        arm_R.position.set(-15, 35, 0);
+        arm_R.rotation.z = (Math.PI / 7) * 2;
+        arm_R.rotation.x = Math.PI / 6;
+        
+
+        // main body
+        const geomC1 = new THREE.BoxGeometry(7, 60, 7);
+        const partC1 = new THREE.Mesh(geomC1, matC);
+
+        const geomC2 = new THREE.BoxGeometry(10, 3, 10);
+        const partC2 = new THREE.Mesh(geomC2, matC);
+
+        const partC = new THREE.Object3D();
+        partC1.position.set(0, 30, 0);
+        partC2.position.set(0, 60, 0); 
+        partC.add(partC1);
+        partC.add(partC2);
+        const main_body = new THREE.Object3D();
+        main_body.add(partC);
+        scene.add(main_body);
+
+        // Sholder
+        const geomE = new THREE.BoxGeometry(15, 15, 20);
+        const partE = new THREE.Mesh(geomE, matA);
+        const sholder_L = new THREE.Object3D();
+        const sholder_R = new THREE.Object3D();
+        sholder_L.add(partE.clone());
+        sholder_R.add(partE.clone());
+        sholder_L.position.set(-4, 27, -15);
+        sholder_R.position.set(4, 27, -15);
+        sholder_L.rotation.z = (Math.PI / 7) * 2;
+        sholder_L.rotation.x = Math.PI / 6;
+        sholder_R.rotation.z = -(Math.PI / 7) * 2;
+        sholder_R.rotation.x = Math.PI / 6;
+        scene.add(sholder_L);
+        scene.add(sholder_R);
+
+        // scale down
+        sholder_L.scale.set(0.2, 0.2, 0.2);
+        sholder_R.scale.set(0.2, 0.2, 0.2);
+        arm_L.scale.set(0.2, 0.2, 0.2);
+        arm_R.scale.set(0.2, 0.2, 0.2);
+        main_body.scale.set(0.2, 0.2, 0.2);
+        sholder_L.position.set(-1.5, 8, -11);
+        sholder_R.position.set(1.5, 8, -11);
+        arm_L.position.set(3.5, 9, -10);
+        arm_R.position.set(-3.5, 9, -10);
+        main_body.position.set(0, 0, -10);
+
+        let controller, controllerGrip, raycaster;//mr
+        controller = renderer.xr.getController( 0 );
+        const controllerModelFactory = new XRControllerModelFactory();//mr
+        controllerGrip = renderer.xr.getControllerGrip( 0 );//mr
+				controllerGrip.add( controllerModelFactory.createControllerModel( controllerGrip ) );//mr
+				scene.add( controllerGrip );//mr
+
+        raycaster = new THREE.Raycaster();
+        raycaster.setFromXRController( controller );
+
+        set_cross();
+        scene.background = new THREE.Color(0xffffff); // Set background to white
+        function render (time) {
+            
+            // requestAnimationFrame(render);//vr
+            
+            // currentControl.update(clock.getDelta());
+            // console.log('camera1');
+            renderer.render(scene, camera);
+    
+            // cube.rotation.x += 0.1;
+            // cube.rotation.y += 0.1; 
+            time *= 0.001; 
+            const rot = 1 * time;
+            
+            L1.rotation.x =  Math.sin(Date.now() * 0.001 + Math.PI / 2) * 0.3;
+            L2.rotation.y = -Math.sin(Date.now() * 0.001 + Math.PI / 2) * 0.2 - 0.8;// -: change start,  *0.001: speed, *0.2: range, -0.5: offset
+            L3.rotation.x = Math.sin(Date.now() * 0.001 + Math.PI / 2) * 0.5 - 0.6;
+            L4.rotation.y = -Math.sin(Date.now() * 0.001 + Math.PI / 2) * 0.5 - 1.0;
+            L5.rotation.x = Math.sin(Date.now() * 0.001 + Math.PI / 2) * 2.0;
+            L6.rotation.y = Math.sin(Date.now() * 0.001 + Math.PI / 2) * 0.5;
+            L8_p1.rotation.y = -(Math.sin(Date.now() * 0.001 + Math.PI / 2) * -0.3);// -(): direction
+            L8_p2.rotation.y = -(Math.sin(Date.now() * 0.001 + Math.PI / 2) * 0.3);
+            
+
+            R1.rotation.x =  Math.sin(Date.now() * 0.001 + Math.PI / 2) * 0.2;
+            R2.rotation.y = Math.sin(Date.now() * 0.001 + Math.PI / 2) * 0.6 + 0.8;
+            R3.rotation.x = -Math.sin(Date.now() * 0.001 + Math.PI / 2) * 0.5 + 0.5;
+            R4.rotation.y = Math.sin(Date.now() * 0.001 + Math.PI / 2) * 0.5 + 0.9;
+            R5.rotation.x = Math.sin(Date.now() * 0.001 + Math.PI / 2) * 2.0;
+            R6.rotation.y = Math.sin(Date.now() * 0.001 + Math.PI / 2) * 0.5;
+            R8_p1.rotation.y = -(Math.sin(Date.now() * 0.001 + Math.PI / 2) * -0.3);
+            R8_p2.rotation.y = -(Math.sin(Date.now() * 0.001 + Math.PI / 2) * 0.3);
+          
+        };
+        renderer.setAnimationLoop(render);//vr mr
+        render();
+        
+
+    </script>
+  </body>
+</html>

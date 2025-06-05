@@ -1,0 +1,570 @@
+<!-- Licensed under a BSD license. See license.html for license -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Three.js - Basic Cube</title>
+    <style>
+      html,
+      body {
+        width: 50%;
+        height: 50%;
+        margin: 0;
+      }
+
+      #c {
+        width: 50%;
+        height: 50%;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+  <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.172.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.172.0/examples/jsm/"
+      }
+    }
+  </script>
+
+<script type="module">
+    import * as THREE from 'three';
+    // import { TextGeometry } from '/three/examples/jsm/geometries/TextGeometry.js';
+    // import { FontLoader } from '/three/examples/jsm/loaders/FontLoader.js';
+    import { TextGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/geometries/TextGeometry.js';
+    import { FontLoader } from 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/loaders/FontLoader.js';
+    import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.js';
+    import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { RectAreaLightHelper } from 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/helpers/RectAreaLightHelper.js';
+    import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+    
+
+        var scene = new THREE.Scene();
+        var renderer = new THREE.WebGLRenderer();
+        // console.log(renderer.context);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // make shadow soft
+        document.body.appendChild(renderer.domElement);    
+        renderer.shadowMap.enabled = true 
+        
+                 
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        // Light
+        //////////////////////////////////////////////////////////////////////////////////////////////
+
+        // parameters of the lights
+        const lightParams = {
+          ambientLightIntensity: 0.3,
+          directionalLightIntensity: 0.6,
+          pointLightIntensity: 0.6,
+          
+          spotLightIntensity: 3,
+          spotLightAngle: Math.PI / 4,
+          hemisphereLightIntensity: 0.6,
+          hemisphereLightUpColor: 0x888888,
+          hemisphereLightDownColor: 0x0000FF,
+        };
+
+        // ambient light
+        const ambientLight = new THREE.AmbientLight(0xffffff, lightParams.ambientLightIntensity); 
+        scene.add(ambientLight);
+
+        // A directional light 
+        const directionalLight = new THREE.DirectionalLight(0xffffff, lightParams.directionalLightIntensity);
+        directionalLight.position.set(0, 4, 0);
+        directionalLight.target.position.set(0, 0, 0);
+        // scene.add(directionalLight);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.camera.near = 0;
+				directionalLight.shadow.camera.far = 20;
+				directionalLight.shadow.camera.right = 5;
+				directionalLight.shadow.camera.left = - 5;
+				directionalLight.shadow.camera.top	= 5;
+				directionalLight.shadow.camera.bottom = - 5;
+				directionalLight.shadow.mapSize.width = 1024; // cell size of the shadow map
+				directionalLight.shadow.mapSize.height = 1024;
+        directionalLight.shadow.bias = -0.001;
+        scene.add(directionalLight.target);
+        const dLightHelper = new THREE.DirectionalLightHelper(directionalLight);
+        // scene.add(dLightHelper); 
+        const dirShadowCameraHelper = new THREE.CameraHelper( directionalLight.shadow.camera );
+		    // scene.add( dirShadowCameraHelper );
+
+        // A point light
+        const pointLight = new THREE.DirectionalLight(0xffffff, lightParams.pointLightIntensity, 50, 1.0); //(color, intensity, distance, attenuation)
+        pointLight.position.set(0, 3.8, 0);
+        pointLight.castShadow = true;
+        pointLight.shadow.mapSize.width = 1024;
+        pointLight.shadow.mapSize.height = 1024;
+        pointLight.shadow.camera.near = 0.5;
+        pointLight.shadow.camera.far = 500;
+        // scene.add(pointLight);
+
+        // A spot light
+        const spotLight = new THREE.SpotLight(0xFFFFFF, lightParams.spotLightIntensity, 30, lightParams.spotLightAngle, 10, 0.5);
+        spotLight.position.set(0, 4, 0)
+        spotLight.castShadow = true;
+        spotLight.shadow.camera.near = 1;
+				spotLight.shadow.camera.far = 5;
+				spotLight.shadow.mapSize.width = 1024;
+				spotLight.shadow.mapSize.height = 1024;
+        spotLight.shadow.bias = -0.001;
+        spotLight.target.position.set( 0, 0, -4 );
+        scene.add( spotLight.target );
+        spotLight.target.updateMatrixWorld();
+        scene.add(spotLight);
+
+        const spotShadowCameraHelper = new THREE.CameraHelper( spotLight.shadow.camera );
+		    // scene.add( spotShadowCameraHelper );
+
+      
+        // A hemisphere light
+        const hemisphereLight = new THREE.HemisphereLight(0x888888, 0x0000FF, lightParams.hemisphereLightIntensity); // color from upside, color from downside
+        hemisphereLight.position.set(0, 3.8, 0)
+        // scene.add(hemisphereLight);
+
+        // RectAreaLight
+        const width = 0.1;
+        const height = 1.2;
+        const intensity = 100;
+
+        // const rectLight = new THREE.RectAreaLight( 0xffffff, intensity,  height, width );
+        // rectLight.position.set( 2, 3, 2 );
+        // rectLight.lookAt( 2, 0, 2 );
+        // scene.add( rectLight );
+        // const rectLightHelper = new RectAreaLightHelper( rectLight );
+        // rectLight.add( rectLightHelper );
+
+        // const rectLight2 = new THREE.RectAreaLight( 0xffffff, intensity,  height, width );
+        // rectLight2.position.set( -2, 3, 2 );
+        // rectLight2.lookAt( -2, 0, 2 );
+        // scene.add( rectLight2 );
+        // const rectLightHelper2 = new RectAreaLightHelper( rectLight2 );
+        // rectLight2.add( rectLightHelper2 );
+
+        // const rectLight3 = new THREE.RectAreaLight( 0xffffff, intensity,  height, width );
+        // rectLight3.position.set( 0, 3, 2 );
+        // rectLight3.lookAt( 0, 0, 2 );
+        // scene.add( rectLight3 );
+        // const rectLightHelper3 = new RectAreaLightHelper( rectLight3 );
+        // rectLight3.add( rectLightHelper3 );
+
+        // const rectLight4 = new THREE.RectAreaLight( 0xffffff, intensity,  height, width );
+        // rectLight4.position.set( 2, 3, -3 );
+        // rectLight4.lookAt( 2, 0, -3 );
+        // scene.add( rectLight4 );
+        // const rectLightHelper4 = new RectAreaLightHelper( rectLight4 );
+        // rectLight4.add( rectLightHelper4 );
+
+        // const rectLight5 = new THREE.RectAreaLight( 0xffffff, intensity,  height, width );
+        // rectLight5.position.set( -2, 3, -3 );
+        // rectLight5.lookAt( -2, 0, -3 );
+        // scene.add( rectLight5 );
+        // const rectLightHelper5 = new RectAreaLightHelper( rectLight5 );
+        // rectLight5.add( rectLightHelper5 );
+
+        // const rectLight6 = new THREE.RectAreaLight( 0xffffff, intensity,  height, width );
+        // rectLight6.position.set( 0, 3, -3 );
+        // rectLight6.lookAt( 0, 0, -3 );
+        // scene.add( rectLight6 );
+        // const rectLightHelper6 = new RectAreaLightHelper( rectLight6 );
+        // rectLight6.add( rectLightHelper6 );
+
+        // const rectLight7 = new THREE.RectAreaLight( 0xffffff, intensity,  height, width );
+        // rectLight7.position.set( 2, 3, -2 );
+        // rectLight7.lookAt( 2, 0, -2 );
+        // scene.add( rectLight7 );
+        // const rectLightHelper7 = new RectAreaLightHelper( rectLight7 );
+        // rectLight7.add( rectLightHelper7 );
+
+        // const rectLight8 = new THREE.RectAreaLight( 0xffffff, intensity,  height, width );
+        // rectLight8.position.set( -2, 3, -2 );
+        // rectLight8.lookAt( -2, 0, -2 );
+        // scene.add( rectLight8 );
+        // const rectLightHelper8 = new RectAreaLightHelper( rectLight8 );
+        // rectLight8.add( rectLightHelper8 );
+
+        // const rectLight9 = new THREE.RectAreaLight( 0xffffff, intensity,  height, width );
+        // rectLight9.position.set( 0, 3, -2 );
+        // rectLight9.lookAt( 0, 0, -2 );
+        // scene.add( rectLight9 );
+        // const rectLightHelper9 = new RectAreaLightHelper( rectLight9 );
+        // rectLight9.add( rectLightHelper9 );
+
+
+        // PerspectiveCamera
+        var aspect = window.innerWidth / window.innerHeight;
+        const camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
+        camera.position.set(0, 0, 5);
+        const controls = new OrbitControls(camera, renderer.domElement);
+
+        
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        // Functions
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        
+        
+        
+
+
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        // Materials
+        //////////////////////////////////////////////////////////////////////////////////////////////
+
+        // materials
+        // const matA = new THREE.MeshStandardMaterial({ color: 0x505050 }); // dark gray color
+        // const matA = new THREE.MeshStandardMaterial({ color: 0x808080 }); // light gray color
+        
+        const mat_white = new THREE.MeshStandardMaterial({ 
+          color: 0xffffff, //white
+        });
+        const matLam_white = new THREE.MeshLambertMaterial({ 
+          color: 0xffffff, //white
+        });
+
+        const mat_gui = new THREE.MeshStandardMaterial({ color: "0xffffff" }); // white
+
+        const mat_lightGray = new THREE.MeshStandardMaterial({ 
+            color: 0x808080, // light gray color
+        });
+        const matLam_lightGray = new THREE.MeshLambertMaterial({ 
+            color: 0x808080, // light gray color
+        });
+
+        const mat_red = new THREE.MeshLambertMaterial({ color: 0xff0000 }); // red
+        const mat_green = new THREE.MeshLambertMaterial({ color: 0x00ff00 }); // green
+
+
+        const mat_left = new THREE.MeshLambertMaterial()
+        const mat_center = new THREE.MeshPhysicalMaterial()
+        const mat_right = new THREE.MeshPhongMaterial()
+
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        // Modeling
+        //////////////////////////////////////////////////////////////////////////////////////////////
+
+        // table
+        const g_plate = new THREE.BoxGeometry(1.6, 1, 0.02);
+        const p_plate = new THREE.Mesh(g_plate, mat_gui);
+        const g_leg = new THREE.CylinderGeometry(0.05, 0.05, 0.7, 5);
+        const p_leg = new THREE.Mesh(g_leg, mat_white);
+        const table = new THREE.Object3D();
+        const p_leg1 = p_leg.clone();
+        const p_leg2 = p_leg.clone()
+        p_plate.castShadow = true;
+        p_plate.receiveShadow = true;
+        p_leg1.castShadow = true;// Be careful! castShadow should be put actual parent mesh. e.g. cloned one
+        p_leg1.receiveShadow = true;
+        p_leg2.castShadow = true;
+        p_leg2.receiveShadow = true;
+        p_plate.position.set(0, 0.7, 0); 
+        p_plate.rotation.x = Math.PI / 2;
+        p_leg1.position.set(0.65, 0.35, 0);
+        p_leg2.position.set(-0.65, 0.35, 0);
+        table.add(p_plate);
+        table.add(p_leg1);
+        table.add(p_leg2)
+        table.rotation.y = Math.PI / 2
+        table.position.set(0, 0, 2)
+
+        const tables = new THREE.Object3D();
+        tables.add(table)
+
+        const table2 = table.clone()
+        table2.position.set(0, 0, 2-0.8*2)
+        tables.add(table2)
+
+        const table3 = table.clone()
+        table3.position.set(0, 0, 2-(0.8*2)*2)
+        tables.add(table3)
+
+        const table4 = table.clone()
+        table4.position.set(0, 0, 2-(0.8*2)*3)
+        tables.add(table4)
+
+        const tables1 = tables.clone()
+        tables1.position.set(2, 0, 0)
+
+        scene.add(tables1)
+        const tables2 = tables.clone()
+        tables2.position.set(-2, 0, 0)
+        scene.add(tables2)
+
+        const table5 = table.clone()
+        table5.rotation.y = Math.PI 
+        table5.position.set(-0.8, 0, 2-(0.8*2)*3-0.3)
+        scene.add(table5)
+        const table6 = table.clone()
+        table6.rotation.y = Math.PI 
+        table6.position.set(0.8, 0, 2-(0.8*2)*3-0.3)
+        scene.add(table6)
+
+        // chair
+        const chair = new THREE.Object3D();
+        const g_plate_c = new THREE.BoxGeometry(0.5, 0.05, 0.5);
+        const p_plate_c = new THREE.Mesh(g_plate_c, mat_lightGray);
+        const p_plate2_c = p_plate_c.clone()
+        const g_leg_c = new THREE.CylinderGeometry(0.02, 0.02, 0.5, 5);
+        const p_leg_c = new THREE.Mesh(g_leg_c, mat_white);
+        const p_leg1_c = p_leg_c.clone()
+        const p_leg2_c = p_leg_c.clone()
+        const p_leg3_c = p_leg_c.clone()
+        const p_leg4_c = p_leg_c.clone()
+        p_plate_c.castShadow = true;
+        p_plate_c.receiveShadow = true;
+        p_plate2_c.castShadow = true;
+        p_plate2_c.receiveShadow = true;
+        p_leg1_c.castShadow = true;
+        p_leg1_c.receiveShadow = true;
+        p_leg2_c.castShadow = true;
+        p_leg2_c.receiveShadow = true;
+        p_leg3_c.castShadow = true;
+        p_leg3_c.receiveShadow = true;
+        p_leg4_c.castShadow = true;
+        p_leg4_c.receiveShadow = true;
+        p_plate_c.position.set(0, 0.5, 0); 
+        p_plate2_c.rotation.z = Math.PI / 2;
+        p_plate2_c.rotation.y = Math.PI / 2;
+        p_plate2_c.position.set(0, 0.7, 0.25)
+        p_leg1_c.position.set(0.24, 0.25, 0.24);
+        p_leg2_c.position.set(-0.24, 0.25, 0.24);
+        p_leg3_c.position.set(0.24, 0.25, -0.24);
+        p_leg4_c.position.set(-0.24, 0.25, -0.24);
+        chair.add(p_plate_c);
+        chair.add(p_plate2_c);
+        chair.add(p_leg1_c);
+        chair.add(p_leg2_c)
+        chair.add(p_leg3_c);
+        chair.add(p_leg4_c)
+        chair.rotation.y = Math.PI / 2
+
+        const chairs = new THREE.Object3D();
+        const chair1 = chair.clone()
+        chair1.position.set(0, 0, 0)
+        chairs.add(chair1)
+        const chair2 = chair.clone()
+        chair2.position.set(0, 0, -1.0)
+        chairs.add(chair2)
+        const chair3 = chair.clone()
+        chair3.position.set(0, 0, -1.0*2+0.2)
+        chairs.add(chair3)
+        const chair4 = chair.clone()
+        chair4.position.set(0, 0, -1.0*3+0.1)
+        chairs.add(chair4)
+        const chair5 = chair.clone()
+        chair5.position.set(0, 0, -1.0*4)
+        chairs.add(chair5)
+        chairs.position.set(2.5, 0, 2)
+        scene.add(chairs)
+        const chairs2 = chairs.clone()
+        chairs2.rotation.y = Math.PI
+        chairs2.position.set(-2.5, 0, -2)
+        scene.add(chairs2)
+
+        const chair6 = chair.clone()
+        chair6.position.set(-1.5, 0, -3.5)
+        chair6.rotation.y = Math.PI 
+        scene.add(chair6)
+        const chair7 = chair.clone()
+        chair7.position.set(1, 0, -3.5)
+        chair7.rotation.y = Math.PI 
+        scene.add(chair7)
+
+        // floor
+        const g_floor = new THREE.BoxGeometry(7, 0.3, 10);
+        const p_floor = new THREE.Mesh(g_floor, matLam_lightGray);
+        p_floor.receiveShadow = true;
+        const floor = new THREE.Object3D();
+        floor.add(p_floor)
+        floor.position.set(0, -0.15, 0); 
+        scene.add(floor)
+
+        // ceiling
+        const g_ceiling = new THREE.BoxGeometry(7, 0.05, 10);
+        const p_ceiling = new THREE.Mesh(g_ceiling, matLam_white);
+        const ceiling = new THREE.Object3D();
+        ceiling.add(p_ceiling)
+        ceiling.position.set(0, 4, 0); 
+        p_ceiling.receiveShadow = true;
+        scene.add(ceiling)
+
+        // wall left
+        const g_wall1 = new THREE.BoxGeometry(4, 0.05, 10);
+        const p_wall1 = new THREE.Mesh(g_wall1, mat_red);
+        const wall1 = new THREE.Object3D();
+        wall1.add(p_wall1) 
+        const wall1_1 = wall1.clone()
+        wall1_1.rotation.z = Math.PI / 2
+        wall1_1.position.set(-3.5, 2, 0); 
+        p_wall1.receiveShadow = true;
+        scene.add(wall1_1)
+
+        // wall right
+        const g_wall1_2 = new THREE.BoxGeometry(4, 0.05, 10);
+        const p_wall1_2 = new THREE.Mesh(g_wall1_2, mat_green);
+        const wall1_2 = new THREE.Object3D();
+        wall1_2.add(p_wall1_2)
+        wall1_2.rotation.z = Math.PI / 2
+        wall1_2.position.set(3.5, 2, 0); 
+        p_wall1_2.receiveShadow = true;
+        scene.add(wall1_2)
+
+        // wall back
+        const g_wall2 = new THREE.BoxGeometry(7, 0.05, 4);
+        const p_wall2 = new THREE.Mesh(g_wall2, matLam_white);
+        const wall2 = new THREE.Object3D();
+        wall2.add(p_wall2) 
+        wall2.rotation.x = Math.PI / 2
+        wall2.position.set(0, 2, -5)
+        p_wall2.receiveShadow = true;
+        scene.add(wall2)
+
+        // Left
+        const g_leftCone = new THREE.ConeGeometry(0.3, 0.5, 10)
+        const leftCone = new THREE.Mesh(g_leftCone, mat_left)
+        // const leftCone = new THREE.Object3D();
+        // leftCone.add(p_leftCone)
+        leftCone.position.set(-1.5, 0.7+0.25, 2-(0.8*2)*3-0.3)
+        leftCone.castShadow = true;
+        scene.add(leftCone)
+
+        // center
+        const g_centerSphere = new THREE.SphereGeometry(0.25, 20, 20)
+        const centerSphere = new THREE.Mesh(g_centerSphere, mat_center)
+        centerSphere.position.set(0, 0.7+0.25, 2-(0.8*2)*3-0.3)
+        centerSphere.castShadow = true;
+        scene.add(centerSphere)
+
+        // right
+        const g_rightSphere = new THREE.CylinderGeometry(0.25, 0.25, 0.5)
+        const rightSphere = new THREE.Mesh(g_rightSphere, mat_right)
+        rightSphere.position.set(1.5, 0.7+0.25, 2-(0.8*2)*3-0.3)
+        rightSphere.castShadow = true;
+        scene.add(rightSphere)
+
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        // GUI 
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        const gui = new GUI( { title: 'GUI' } );
+        function guiTable(gui){
+          const folder = gui.addFolder('Table');
+          folder.addColor(p_plate.material, 'color').name('color');
+        }
+        
+        // ambientLight
+        function guiAmbient(gui){
+          const folder = gui.addFolder('Ambient Light');
+          folder.addColor(ambientLight, 'color').name('color');
+          folder.add(ambientLight, 'intensity', 0, 5, 0.01).name('intensity');
+        }
+
+        // pointLight
+        function guiPointLight(gui){
+          const folder = gui.addFolder('Point Light');
+          folder.addColor(pointLight, 'color').name('color');
+          folder.add(pointLight, 'intensity', 0, 5, 0.01).name('intensity');
+          folder.add(pointLight.position, 'x', -10, 10).name('x');
+          folder.add(pointLight.position, 'y', 0, 10).name('y');
+          folder.add(pointLight.position, 'z', -10, 10).name('z');
+        }
+        
+        // directionalLight
+        function guiDirectionalLight(gui){
+          const folder = gui.addFolder('Directional Light');
+          folder.addColor(directionalLight, 'color').name('color');
+          folder.add(directionalLight, 'intensity', 0, 5, 0.01).name('intensity');
+          folder.add(directionalLight.position, 'x', -10, 10).name('x');
+          folder.add(directionalLight.position, 'y', 0, 10).name('y');
+          folder.add(directionalLight.position, 'z', -10, 10).name('z');
+          folder.add(directionalLight.target.position, 'x', -10, 10).name('target x');
+          folder.add(directionalLight.target.position, 'y', 0, 10).name('target y');
+          folder.add(directionalLight.target.position, 'z', -10, 10).name('target z');   
+        }
+
+        // spotLight
+        function guiSpotLight(gui){
+          const folder = gui.addFolder('Spot Light');
+          folder.addColor(spotLight, 'color').name('color');
+          folder.add(spotLight, 'intensity', 0, 5, 0.01).name('intensity');
+          folder.add(spotLight.position, 'x', -10, 10).name('x');
+          folder.add(spotLight.position, 'y', 0, 10).name('y');
+          folder.add(spotLight.position, 'z', -10, 10).name('z');
+          folder.add(spotLight, 'angle', 0, Math.PI / 2, 0.01).name('angle'); // how wide the light is
+          folder.add(spotLight, 'penumbra', 0, 1, 0.01).name('penumbra'); // penumbra is the softness of the edge of the light
+          // folder.add(spotLight, 'decay', 1, 2, 0.01).name('decay'); //
+        }
+
+        // hemisphereLight
+        function guiHemisphereLight(gui){
+          const folder = gui.addFolder('Hemisphere Light');
+          folder.addColor(hemisphereLight, 'color').name('sky color');
+          folder.addColor(hemisphereLight, 'groundColor').name('ground color');
+          folder.add(hemisphereLight, 'intensity', 0, 5, 0.01).name('intensity');
+        }
+
+        // shadow
+        function guiShadow(gui, light){
+          gui.add(light.shadow.mapSize, 'width', 10, 1024).name('shadow map width'); // width of shadow
+          gui.add(light.shadow.mapSize, 'height', 10, 1024).name('shadow map height'); // height of shadow
+          // gui.add(light.shadow.camera, 'near', 0.1, 100).name('shadow near');
+          // gui.add(light.shadow.camera, 'far', 0.1, 100).name('shadow far');
+        }
+
+        // GUI execution
+        const lightTypes = {
+          type: 'SpotLight', // Default selection
+        };
+        const lights = {
+          PointLight: pointLight,
+          DirectionalLight: directionalLight,
+          SpotLight: spotLight,
+          HemisphereLight: hemisphereLight
+        };
+        gui.add(lightTypes, 'type', Object.keys(lights)).onChange((value) => {
+          // Remove all lights
+          Object.values(lights).forEach((light) => {
+            scene.remove(light);
+          });
+          // Add selected light
+          scene.add(lights[value]);
+        });
+
+
+        guiTable(gui);
+        guiPointLight(gui);
+        guiShadow(gui, pointLight);
+        guiDirectionalLight(gui);
+        guiShadow(gui, directionalLight);
+        guiSpotLight(gui);
+        guiShadow(gui, spotLight);
+        guiHemisphereLight(gui);
+
+      
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        // Rendrer
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        // scene.background = new THREE.Color(0xffffff); // Set background to white
+        function render (time) {
+            
+            dLightHelper.update();
+            spotShadowCameraHelper.update();
+            dirShadowCameraHelper.update();
+            requestAnimationFrame(render);
+            renderer.render(scene, camera);
+            controls.update();
+        };
+        render();
+        
+
+    </script>
+  </body>
+</html>

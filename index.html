@@ -83,6 +83,19 @@
             height: 350px;
         }
     }
+
+    .project-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 5px;
+        width: 80%;
+    }
+    .project-grid iframe {
+        width: 90%;  /* Increased width of iframe */
+        height: 250px;  /* Increased height */
+        border: none;
+        box-sizing: border-box;
+    }
 </style>
 
 <header>
@@ -100,6 +113,18 @@
     <div class="project-card">
         <h3>Three.js Project 2</h3>  <!-- Title above the demo -->
         <iframe src="projects/room_lighting/PW2_Ex6.html"></iframe>
+        <div class="project-description">
+            <p>This project simulates a room lighting setup, allowing you to adjust different types of lighting. Try modifying the parameters in the GUI.</p>
+        </div>
+    </div>
+    <div class="project-card">
+        <h3>Three.js Project 3</h3>  <!-- Title above the demo -->
+        <div class="project-grid">
+            <!-- <iframe src="projects/shaders/3_basicshader3.html"></iframe>
+            <iframe src="projects/shaders/5_point2.html"></iframe> -->
+            <iframe src="projects/shaders/6_star.html"></iframe>
+            <iframe src="projects/shaders/8_elevation-basic.html"></iframe>
+        </div>
         <div class="project-description">
             <p>This project simulates a room lighting setup, allowing you to adjust different types of lighting. Try modifying the parameters in the GUI.</p>
         </div>

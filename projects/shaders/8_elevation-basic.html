@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>three.js webgl - orbit controls</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body {
+			background-color: #ccc;
+			color: #000;
+		}
+
+		a {
+			color: #f00;
+		}
+	</style>
+</head>
+
+<body>
+	<script type="x-shader/x-vertex" id="basicVertexshader">
+			varying vec2 vUv;
+			uniform float scaleElevation; 
+			uniform vec2 stepPixel;
+			uniform sampler2D tex;
+			varying vec3 vNormal; //
+
+			void main() {
+				vUv = uv;
+				vec3 color = texture2D ( tex, vUv ).rgb;
+				float l = length ( color );
+				vec3 tmp = position;
+				tmp.z = tmp.z + l*scaleElevation;	
+				gl_Position = projectionMatrix * modelViewMatrix * vec4(tmp, 1.0); 
+				// modelViewMatrix: Converts from local space → camera space.
+				//projectionMatrix: Converts from camera space → clip space.
+				//vNormal = normalMatrix * normal; // Transform normals
+				vNormal = normalMatrix * vec3(1., 1., 0.5); // Transform normals
+				
+			}
+		</script>
+
+	<script type="x-shader/x-vertex" id="normalVertexshader">
+		varying vec2 vUv;
+		uniform float scaleElevation; 
+		//uniform vec2 stepPixel;
+		uniform sampler2D tex;
+		varying vec3 vNormal; // Updated normal
+	
+		void main() {
+			vUv = uv;
+			vec2 stepPixel = vec2(0.001, 0.001);
+			// Sample height at three points: center, right, and up
+			float hCenter = length(texture2D(tex, vUv).rgb);
+			float hRight  = length(texture2D(tex, vUv + vec2(stepPixel.x, 0.0)).rgb);
+			float hUp     = length(texture2D(tex, vUv + vec2(0.0, stepPixel.y)).rgb);
+			
+			// Compute tangent vectors
+			vec3 pCenter = vec3(position.xy, position.z + hCenter * scaleElevation);
+			vec3 pRight  = vec3(position.x + stepPixel.x, position.y, position.z + hRight * scaleElevation);
+			vec3 pUp     = vec3(position.x, position.y + stepPixel.y, position.z + hUp * scaleElevation);
+	
+			// Compute normal using cross product
+			vec3 tangentX = pRight - pCenter;
+			vec3 tangentY = pUp - pCenter;
+			vec3 normal = normalize(cross(tangentX, tangentY));
+	
+			// Store updated normal for fragment shader
+			vNormal = normalMatrix * normal; 
+	
+			// Apply height displacement
+			gl_Position = projectionMatrix * modelViewMatrix * vec4(pCenter, 1.0);
+		}
+		</script>
+
+	<script type="x-shader/x-fragment" id="basicFragmentshader">
+			varying vec2 vUv;
+			uniform sampler2D tex;
+
+			void main() {
+				vec3 color = texture2D ( tex, vUv ).rgb;
+				
+				gl_FragColor.rgb = color;
+				gl_FragColor.a = 1.0;
+			}
+		</script>
+	<script type="x-shader/x-fragment" id="normalFragmentshader">
+		varying vec2 vUv;
+		uniform sampler2D tex;
+		varying vec3 vNormal; //
+
+		void main() {
+			vec3 color = texture2D ( tex, vUv ).rgb;
+			
+			vec3 modifiedNormal = normalize(vNormal + vec3(0.2, 0.0, 0.0)); // Slightly tilt normal
+			gl_FragColor = vec4(modifiedNormal, 1.0);//
+
+		}
+		</script>
+	<script type="x-shader/x-fragment" id="normalFragmentshader2">
+		varying vec2 vUv;
+		varying vec3 vNormal;
+		uniform sampler2D tex;
+		uniform vec3 lightDir;  // Light direction uniform
+		uniform vec3 viewDir;   // View direction uniform
+		uniform vec3 lightColor; // Light color
+		uniform vec3 objectColor; // Object color
+		uniform float shininess; // Shininess factor for specular highlight
+	
+		void main() {
+			vec3 color = texture2D(tex, vUv).rgb;
+	
+			// Normalize vectors
+			vec3 N = normalize(vNormal); // Surface normal
+			vec3 L = normalize(lightDir); // Light direction
+			vec3 V = normalize(viewDir); // View direction
+	
+			// Diffuse lighting (Lambertian)
+			float diff = max(dot(N, L), 0.0);
+	
+			// Specular lighting (Blinn-Phong)
+			vec3 H = normalize(L + V); // Halfway vector
+			float spec = pow(max(dot(N, H), 0.0), shininess);
+	
+			// Combine lighting components
+			vec3 diffuse = diff * lightColor * color;
+			vec3 specular = spec * lightColor;
+	
+			// Final color
+			vec3 finalColor = objectColor * diffuse + specular;
+	
+			gl_FragColor = vec4(finalColor, 1.0);
+		}
+		</script>
+	<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+	<script type="importmap">
+		  {
+			"imports": {
+			  "three": "https://unpkg.com/three@0.172.0/build/three.module.js",
+			  "three/addons/": "https://unpkg.com/three@0.172.0/examples/jsm/"
+			}
+		  }
+		</script>
+
+	<script type="module">
+		import * as THREE from 'three';
+		import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+		import { BoxLineGeometry } from 'three/addons/geometries/BoxLineGeometry.js';
+		import { VertexNormalsHelper } from 'three/addons/helpers/VertexNormalsHelper.js';
+		import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+
+		let camera, controls, scene, renderer;
+		let texture, room;
+		let shaderMaterial;
+
+		let spotLight, plane, basicElevationMaterial;
+
+		init();
+		animate();
+
+		function init() {
+			console.log(THREE.REVISION);
+			scene = new THREE.Scene();
+			scene.background = new THREE.Color(0xffffff);
+
+			camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 50);
+			camera.position.set(0.5, 5, 0.5);
+			camera.up.set(0, 0, 1);
+
+			var light = new THREE.DirectionalLight(0x888888, 1, 10, 1);
+			light.position.set(10, 7, 5);
+			// scene.add(light);
+
+			spotLight = new THREE.SpotLight(0xFFFFFF, 10, 10, Math.PI / 8, 2, 0.5);
+			spotLight.position.set(0, 0, 3); // x, y, z	
+			scene.add(spotLight);
+			const spotLightHelper = new THREE.SpotLightHelper(spotLight, 0.5); // 0.5 is the size of the helper
+			// scene.add(spotLightHelper);
+
+			room = new THREE.LineSegments(
+				new BoxLineGeometry(20, 20, 10, 20, 20, 10),
+				new THREE.LineBasicMaterial({ color: 0x808080 })
+			);
+			scene.add(room);
+
+			var geometry = new THREE.BoxGeometry(5, 5, .5, 10, 10, 2);
+			var material = new THREE.MeshStandardMaterial({ roughness: 1.0, metalness: 0.0 });
+			var base = new THREE.Mesh(geometry, material);
+			base.position.z = -2;
+			scene.add(base);
+
+			const loader = new THREE.TextureLoader();
+			loader.load('grenouille-gaus.jpg', function (texture) {
+
+				var scaleElevation = 0.75;
+				var discret = 2;
+				//var stepPixel = 0.001
+
+				basicElevationMaterial = new THREE.ShaderMaterial({
+					// vertexShader: document.querySelector('#basicVertexshader').textContent.trim(),
+					// fragmentShader: document.querySelector('#basicFragmentshader').textContent.trim(),
+					vertexShader: document.querySelector('#normalVertexshader').textContent.trim(),
+					fragmentShader: document.querySelector('#normalFragmentshader').textContent.trim(),
+					uniforms: {
+						scaleElevation: { value: scaleElevation },
+						tex: { value: texture },
+						// stepPixel: {stepPixel}
+						lightDir: { value: new THREE.Vector3(0.0, 0.0, 1.0) },
+						viewDir: { value: new THREE.Vector3(0.0, 0.0, 1.0) },
+						lightColor: { value: new THREE.Vector3(1.0, 1.0, 1.0) }, // White light
+						objectColor: { value: new THREE.Vector3(1.0, 1.0, 1.0) }, // Default object color
+						shininess: { value: 32.0 } // Specular shininess factor
+					}
+				});
+
+
+				console.log(texture.image.width);
+				console.log(texture.image.height);
+
+				// show elevation map
+				var scale = 4.0;
+				var factor = texture.image.height / texture.image.width;
+				var planeGeometry = new THREE.PlaneGeometry(scale, scale * factor, texture.image.width / discret, texture.image.height / discret);
+				plane = new THREE.Mesh(planeGeometry, basicElevationMaterial);
+				plane.material.side = THREE.DoubleSide;
+				plane.position.z = -0.8;
+				plane.rotation.z = Math.PI;
+
+				scene.add(plane);
+
+				// show frog
+				var basicMaterial = new THREE.MeshBasicMaterial({ map: texture });
+				var plane2 = new THREE.Mesh(planeGeometry, basicMaterial);
+				plane2.material.side = THREE.DoubleSide;
+				plane2.position.z = -1.6;
+				plane2.rotation.z = Math.PI;
+
+				scene.add(plane2);
+
+			});
+
+
+
+
+			renderer = new THREE.WebGLRenderer({ antialias: true });
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setSize(window.innerWidth, window.innerHeight);
+
+			document.body.appendChild(renderer.domElement);
+
+			// controls
+			controls = new OrbitControls(camera, renderer.domElement);
+
+			controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+			controls.dampingFactor = 0.05;
+
+			controls.screenSpacePanning = true;
+
+			controls.minDistance = 1;
+			controls.maxDistance = 50;
+
+			window.addEventListener('resize', onWindowResize, false);
+
+
+		}
+
+		function onWindowResize() {
+
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+
+			renderer.setSize(window.innerWidth, window.innerHeight);
+
+		}
+
+		function updateShaderUniforms() {
+			if (!plane || !basicElevationMaterial) return; // Ensure objects exist
+
+			// Get world positions
+			const lightPos = spotLight.position.clone();
+			const cameraPos = camera.position.clone();
+			const planeWorldPos = new THREE.Vector3();
+			plane.getWorldPosition(planeWorldPos); // Get plane position in world space
+
+			// Compute light direction (from fragment to light) in world space
+			const lightDir = lightPos.sub(planeWorldPos).normalize();
+			basicElevationMaterial.uniforms.lightDir.value.copy(lightDir);
+
+			// Compute view direction (from fragment to camera)
+			const viewDir = cameraPos.sub(planeWorldPos).normalize();
+			basicElevationMaterial.uniforms.viewDir.value.copy(viewDir);
+
+			// Ensure the shader updates
+			basicElevationMaterial.needsUpdate = true;
+		}
+
+		function animate() {
+
+			requestAnimationFrame(animate);
+			controls.update(); // only required if controls.enableDamping = true, or if controls.autoRotate = true
+			updateShaderUniforms();
+			render();
+
+		}
+
+		
+
+		// function guiSpotLight(gui) {
+		// 	const folder = gui.addFolder('Spot Light');
+		// 	folder.addColor(spotLight, 'color').name('color');
+		// 	folder.add(spotLight, 'intensity', 0, 5, 0.01).name('intensity');
+		// 	folder.add(spotLight.position, 'x', -10, 10).name('x');
+		// 	folder.add(spotLight.position, 'y', 0, 10).name('y');
+		// 	folder.add(spotLight.position, 'z', -10, 10).name('z');
+		// 	folder.add(spotLight, 'angle', 0, Math.PI / 2, 0.01).name('angle'); // how wide the light is
+		// 	folder.add(spotLight, 'penumbra', 0, 1, 0.01).name('penumbra'); // penumbra is the softness of the edge of the light
+		// 	// folder.add(spotLight, 'decay', 1, 2, 0.01).name('decay'); //
+		// }
+		function guiSpotLight(gui) {
+			const folder = gui.addFolder('Spot Light');
+			folder.addColor(spotLight, 'color').name('Color').onChange(() => updateShaderUniforms());
+			folder.add(spotLight, 'intensity', 0, 5, 0.01).name('Intensity').onChange(() => updateShaderUniforms());
+			folder.add(spotLight.position, 'x', -10, 10).name('X').onChange(() => updateShaderUniforms());
+			folder.add(spotLight.position, 'y', -10, 10).name('Y').onChange(() => updateShaderUniforms());
+			folder.add(spotLight.position, 'z', -10, 10).name('Z').onChange(() => updateShaderUniforms());
+			folder.add(spotLight, 'angle', 0, Math.PI / 2, 0.01).name('Angle').onChange(() => updateShaderUniforms());
+			folder.add(spotLight, 'penumbra', 0, 1, 0.01).name('Penumbra').onChange(() => updateShaderUniforms());
+		}
+
+		
+
+		// const gui = new GUI({ title: 'GUI' });
+		// guiSpotLight(gui);
+
+
+
+
+		function render() {
+			renderer.render(scene, camera);
+		}
+
+	</script>
+
+</body>
+
+</html>

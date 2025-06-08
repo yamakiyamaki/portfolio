@@ -26,15 +26,18 @@
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-        gap: 40px;  /* Increased gap */
+        gap: 40px;
+        /* Increased gap */
         margin: 20px 0;
         width: 100%;
-        max-width: 1400px;  /* Optional: Limit the width for larger screens */
+        max-width: 1400px;
+        /* Optional: Limit the width for larger screens */
     }
 
     .project-card {
         width: 100%;
-        max-width: 1000px;  /* Increased max-width for larger projects */
+        max-width: 1000px;
+        /* Increased max-width for larger projects */
         padding: 20px;
         background-color: #fff;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -46,16 +49,23 @@
         gap: 20px;
     }
 
+    .project-card img {
+        border: 1px solid grey;
+    }
+
     .project-card iframe {
-        width: 80%;  /* Increased width of iframe */
-        height: 500px;  /* Increased height */
-        border: none;
+        width: 90%;
+        /* Increased width of iframe */
+        height: 500px;
+        /* Increased height */
+        border: 1px solid grey;
         box-sizing: border-box;
     }
 
     .project-description {
-        width: 80%;  /* Adjusted description width */
-        text-align: center;
+        width: 80%;
+        /* Adjusted description width */
+        text-align: left;
         font-size: 1rem;
         color: #333;
     }
@@ -68,7 +78,8 @@
 
         .project-card iframe {
             width: 100%;
-            height: 400px;  /* Adjusted height for smaller screens */
+            height: 400px;
+            /* Adjusted height for smaller screens */
         }
 
         .project-description {
@@ -88,37 +99,95 @@
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 5px;
-        width: 80%;
+        width: 90%;
     }
+
     .project-grid iframe {
-        width: 90%;  /* Increased width of iframe */
-        height: 250px;  /* Increased height */
-        border: none;
+        width: 90%;
+        /* Increased width of iframe */
+        height: 250px;
+        /* Increased height */
+        border: 1px solid grey;
         box-sizing: border-box;
+    }
+
+    .tabs {
+        display: none;
+        /* flex : to show*/
+        list-style-type: none;
+        padding: 0;
+        margin: 20px 0;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .tab a {
+        text-decoration: none;
+        color: #333;
+        font-size: 1.2rem;
+        padding: 10px 20px;
+        border-radius: 5px;
+        background-color: #ddd;
+        transition: background-color 0.3s ease;
+    }
+
+    .tab a:hover {
+        background-color: #aaa;
+    }
+
+    .tab.active a {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .tab-content {
+        width: 80%;
+        display: none;
+        text-align: center;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .content {
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .hidden {
+        display: none;
     }
 </style>
 
 <header>
-    <h1>Welcome to My Portfolio</h1>
+    <h1>Portfolio_TatsukiYAMADA</h1>
 </header>
 
+<nav>
+    <ul class="tabs">
+        <li class="tab" id="tab-xr"><a href="#">XR</a></li>
+        <li class="tab" id="tab-ai"><a href="#">AI</a></li>
+        <li class="tab" id="tab-image-processing"><a href="#">Image Processing</a></li>
+        <li class="tab" id="tab-eye-tracking"><a href="#">Eye Tracking</a></li>
+        <li class="tab" id="tab-neuroscience"><a href="#">Neuroscience</a></li>
+    </ul>
+</nav>
+
+<div class="tab-content">
+    <div id="tab-xr-content" class="content">XR Content here...</div>
+    <div id="tab-ai-content" class="content">AI Content here...</div>
+    <div id="tab-image-processing-content" class="content">Image Processing Content here...</div>
+    <div id="tab-eye-tracking-content" class="content">Eye Tracking Content here...</div>
+    <div id="tab-neuroscience-content" class="content">Neuroscience Content here...</div>
+</div>
+
+<h3>👉<a href="https://github.com/yamakiyamaki/portfolio/tree/main/projects">Github</a></h3>
 <div id="projects">
     <div class="project-card">
-        <h3>Three.js Project 1</h3>  <!-- Title above the demo -->
-        <iframe src="projects/robot_arm/PW1_Ex5.html"></iframe>
-        <div class="project-description">
-            <p>This project involves simulating robotic arm movements and controlling them in real-time. Explore the interactive controls!</p>
-        </div>
-    </div>
-    <div class="project-card">
-        <h3>Three.js Project 2</h3>  <!-- Title above the demo -->
-        <iframe src="projects/room_lighting/PW2_Ex6.html"></iframe>
-        <div class="project-description">
-            <p>This project simulates a room lighting setup, allowing you to adjust different types of lighting. Try modifying the parameters in the GUI.</p>
-        </div>
-    </div>
-    <div class="project-card">
-        <h3>Three.js Project 3</h3>  <!-- Title above the demo -->
+        <h3><a href="https://github.com/yamakiyamaki/portfolio/tree/main/projects/shaders">シェーダー理解用課題</a></h3>
+        <!-- Title above the demo -->
         <div class="project-grid">
             <!-- <iframe src="projects/shaders/3_basicshader3.html"></iframe>
             <iframe src="projects/shaders/5_point2.html"></iframe> -->
@@ -126,7 +195,117 @@
             <iframe src="projects/shaders/8_elevation-basic.html"></iframe>
         </div>
         <div class="project-description">
-            <p>This project simulates a room lighting setup, allowing you to adjust different types of lighting. Try modifying the parameters in the GUI.</p>
+            <p>　vertexShader，fragmentShader，レンダリングパイプラインの理解のために作成したプログラムです．左のプログラムは宇宙空間を進行しているような効果をfragmentShaderで作っており，右のプログラムは各頂点の持つ色情報によって頂点のZ軸座標と光の法線方向をvertexShaderで変更しています．
+            </p>
+            <p>使用言語等：GLSL，Javascript，WebGL</p>
+        </div>
+    </div>
+    <div class="hidden">
+        <h3>ライティング</h3> <!-- Title above the demo -->
+        <iframe src="projects/room_lighting/PW2_Ex6.html"></iframe>
+        <div class="project-description">
+            <p>This project simulates a room lighting setup, allowing you to adjust different types of lighting. Try
+                modifying the parameters in the GUI.</p>
+            <p>使用言語等：GLSL，Javascript，WebGL</p>
+        </div>
+    </div>
+    <div class="project-card">
+        <h3><a href="https://github.com/yamakiyamaki/portfolio/tree/main/projects/robot_arm">Augmented Reality(AR)
+                ロボットアーム</a></h3> <!-- Title above the demo -->
+        <iframe src="projects/robot_arm/PW1_Ex5.html"></iframe>
+        <div class="project-description">
+            <p>　ロボットアームの3Dモデルを作成し動作をシミュレーションするARブラウザアプリケーションを作成しました．
+                スマートフォンやヘッドマウントディスプレイから"START XR"をクリックすると，現実世界にロボットアームが重なって表示されます．
+            </p>
+            <p>使用言語等：GLSL，Javascript，WebGL</p>
+        </div>
+    </div>
+    <div class="project-card">
+        <h3><a
+                href="https://github.com/yamakiyamaki/portfolio/tree/main/projects/image_processing">リアルタイム画像処理（ラプラシアンフィルター，アナグリフ）</a>
+        </h3> <!-- Title above the demo -->
+        <img src="projects/image_processing/anaglyphs_laplacian.png" alt="Three.js Project 1"
+            style="width: 90%; height: auto;">
+        <div class="project-description">
+            <p>　ステレオビデオに対してリアルタイムでガウシアンフィルター，ラプラシアンフィルター，セパラブルフィルター等のフィルター処理（画像内右上）とアナグリフ画像の生成（画像内右下）を行うプログラムを作成しました．GUIからフィルタリングとアナグリフの種類を変更することができます．
+            </p>
+            <p>※アナグリフ：ステレオ画像に赤と青などの色フィルターを適用し，立体的に見える画像を作成する手法です．</p>
+            <p>使用言語等：GLSL，Javascript，WebGL</p>
+        </div>
+    </div>
+    <div class="project-card">
+        <h3><a href="https://github.com/yamakiyamaki/portfolio/tree/main/projects/parallelize">ガウシアンフィルターの並列化</a></h3>
+        <!-- Title above the demo -->
+        <img src="projects/parallelize/gauss_cuda.png" alt="Three.js Project 1" style="width: 90%; height: auto;">
+        <div class="project-description">
+            <p>　画像にガウシアンフィルターを施す処理を行うプログラムを作成しました．左側の画像が元画像で右側がガウシアンフィルターを適用した結果画像です．右の画像の方がフィルタリングによって少しスムースになっています．また，パラレルコンピューティングの理解のためにCUDAとOpenMPを使用したプログラムをそれぞれ作成し，ベンチマークテスト（画像内下のスコア）を行いました．
+            </p>
+            <p>使用言語等：C++，CUDA，OpenMP</p>
+        </div>
+    </div>
+    <div class="project-card">
+        <h3><a href="https://github.com/yamakiyamaki/DL_project">AIによる光の模倣生成</a></h3>
+        <!-- Title above the demo -->
+        <img src="projects/deeplearning/methodlogy.png" alt="Three.js Project 1" style="width: 90%; height: auto;">
+        <div class="project-description">
+            <p>　顔に光が照射されている画像を入力すると，グレイのボールに同様の光が照射されている画像を出力するDeep learning modelを作成しました．また，このプロジェクトでは現実の画像の代わりに顔の3Dモデルを作成し，光の照射をBlender上でシミュレーションした画像をデータセットとして使用しました．
+            </p>
+        </div>
+        <div class="project-grid">
+            <img src="projects/deeplearning/dataset.png" alt="Three.js Project 1" style="width: 90%; height: auto;">
+            <img src="projects/deeplearning/test_result.png" alt="Three.js Project 1" style="width: 90%; height: auto;">
+        </div>
+        <div class="project-description">
+            <p>　顔の3Dモデルは左上の画像のように主に二通りの手法を用いて作成しました．方法1では現実の顔画像をBlender上で3Dモデル化し，方法2では生成AIによって顔画像を生成しさらに三次元再構成AIによって3Dモデル化しました．方法2はデータの生成工程がコンピュータ上で全て完結し自動化することが可能なため無限にデータを作成することができます．本プロジェクでは最終的に1600セットのデータを生成し，1200セットを学習に用いました．モデルのアーキテクチャはU-net，誤差関数はL1 lossを使用しました．学習後，現実の顔画像に対してテストを行った結果が右上の画像です．
+            </p>
+            <p>使用言語等：Python，Pytorch</p>
+            <p>担当箇所：方法1での顔モデルの生成，モデルの学習プログラムの作成</p>
+            <p>チームメンバー：Aswin Vattapparambathu Jayaprakash，Pol Sturlese Ruiz</p>
+        </div>
+    </div>
+    <div class="project-card">
+        <h3><a href="https://github.com/IMLEX24">アイトラッキング</a></h3>
+        <!-- Title above the demo -->
+        <div class="project-grid">
+            <img src="projects/eye_tracking/machigaisagashi.png" alt="Three.js Project 1" style="width: 100%; height: auto;">
+            <img src="projects/eye_tracking/angular_loss.png" alt="Three.js Project 1" style="width: 90%; height: auto;">
+        </div>
+        <div class="project-description">
+            <p>　明示的に表示されたタイマーが課題のパフォーマンスに影響を与えるかどうかをアイトラッキングを用いて確かめたプロジェクトです．被験者を，タイマーを表示するグループとタイマーを表示しないグループに分け，間違い探し課題に対しての視線の動きや課題のパフォーマンスを比較しました．左の図が被験者の視線の動きを可視化したもので，視線の固定（丸）と素早い動き（線）を表しています．視線が画面上部のタイマーに何度か向いていることがわかります．右の図は視線の角速度の計算結果の一例で，尖った山は視線が大きく動いたことを示しています．
+            </p>
+            <p>使用言語等：Python</p>
+            <p>担当箇所：プロジェクト全体の進行管理・取りまとめ，実験の実施，視線の角速度の計算コードの作成</p>
+            <p>チームメンバー：Aswin Vattapparambathu Jayaprakash，Yirga Molla，Suleman Anwar，Pol Sturlese Ruiz，  Yuya Haga，Haruka Nagao，Dinh Hoang Dai
+            </p>
         </div>
     </div>
 </div>
+
+<script>
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', (event) => {
+            event.preventDefault();
+            // Remove 'active' class from all tabs and content
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.content').forEach(content => content.classList.remove('active'));
+
+            // Add 'active' class to the clicked tab and corresponding content
+            tab.classList.add('active');
+            const contentId = tab.id + '-content';
+            const contentElement = document.getElementById(contentId);
+            if (contentElement) {
+                contentElement.classList.add('active');
+            }
+        });
+    });
+
+    // Optionally, you can set the first tab and its content to be active by default
+    const firstTab = document.querySelector('.tab');
+    if (firstTab) {
+        firstTab.classList.add('active');
+        const firstContent = document.getElementById(firstTab.id + '-content');
+        if (firstContent) {
+            firstContent.classList.add('active');
+        }
+    }
+</script>

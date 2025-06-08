@@ -1,0 +1,9 @@
+# Task instructions
+tasks = {
+    "free_viewing": "Look at the image freely.",
+    "estimate_wealth": "Estimate the material circumstances of the family.",
+    "age_estimation": "Estimate the ages of the people in the image.",
+    "activity": "What were the people doing before the unexpected visitor arrived?",
+    "remember_clothes": "Remember the clothes worn by the people in the image.",
+    "furniture": "Remember the positions of the objects and people in the room.",
+}
